@@ -1,0 +1,133 @@
+{
+  "name": "Buzon_Ciudadano",
+  "flow": [
+    {
+      "id": 1,
+      "mapper": {},
+      "module": "telegram:WatchUpdates",
+      "version": 1,
+      "metadata": { "designer": { "x": 0, "y": 0 } },
+      "parameters": { "__IMTHOOK__": 2988722 }
+    },
+    {
+      "id": 2,
+      "mapper": null,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "metadata": { "designer": { "x": 300, "y": 0 } },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 3,
+              "filter": {
+                "name": "Solo reportes (no comandos)",
+                "conditions": [
+                  [
+                    { "a": "{{1.message.text}}", "o": "exist" },
+                    { "a": "{{1.message.text}}", "b": "/", "o": "text:notstartwith" }
+                  ]
+                ]
+              },
+              "mapper": {
+                "name": "folio",
+                "scope": "roundtrip",
+                "value": "AMB-{{formatDate(now; \"YYYYMMDD-HHmmss\"; \"America/Mazatlan\")}}"
+              },
+              "module": "util:SetVariable2",
+              "version": 1,
+              "metadata": { "designer": { "x": 600, "y": -150 } },
+              "parameters": {}
+            },
+            {
+              "id": 4,
+              "mapper": {
+                "from": "drive",
+                "mode": "select",
+                "values": {
+                  "0": "{{3.folio}}",
+                  "1": "{{formatDate(now; \"DD/MM/YYYY HH:mm\"; \"America/Mazatlan\")}}",
+                  "2": "{{1.message.from.username}}",
+                  "3": "{{1.message.from.first_name}}",
+                  "4": "{{1.message.text}}",
+                  "5": "Recibido"
+                },
+                "sheetId": "Reportes",
+                "spreadsheetId": "/1C5NKPSJ9BqamTcHC_uBUpg_HKRHdyUTeaRxj6_dsKII",
+                "includesHeaders": true,
+                "insertDataOption": "INSERT_ROWS",
+                "useColumnHeaders": false,
+                "valueInputOption": "USER_ENTERED",
+                "insertUnformatted": false
+              },
+              "module": "google-sheets:addRow",
+              "version": 2,
+              "metadata": { "designer": { "x": 900, "y": -150 } },
+              "parameters": { "__IMTCONN__": 11980320 }
+            },
+            {
+              "id": 5,
+              "mapper": {
+                "text": "Reporte recibido.\nTu folio es: {{3.folio}}\nEstatus: Recibido\nGuarda este número para dar seguimiento a tu reporte.",
+                "chatId": "{{1.message.chat.id}}",
+                "parseMode": "",
+                "replyMarkup": "",
+                "messageThreadId": "",
+                "replyToMessageId": "",
+                "replyMarkupAssembleType": "reply_markup_enter"
+              },
+              "module": "telegram:SendReplyMessage",
+              "version": 1,
+              "metadata": { "designer": { "x": 1200, "y": -150 } },
+              "parameters": { "__IMTCONN__": 11980281 }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 6,
+              "filter": {
+                "name": "Comando /start",
+                "conditions": [
+                  [
+                    { "a": "{{1.message.text}}", "b": "/start", "o": "text:startwith" }
+                  ]
+                ]
+              },
+              "mapper": {
+                "text": "Hola, este es el Buzón Ambiental. Escribe tu reporte con el formato: Colonia - Problema (por ejemplo: Juan Carrasco - Basura acumulada en el canal de la calle principal). Recibirás un folio para dar seguimiento. No incluyas datos personales de terceros.",
+                "chatId": "{{1.message.chat.id}}",
+                "parseMode": "",
+                "replyMarkup": "",
+                "messageThreadId": "",
+                "replyToMessageId": "",
+                "replyMarkupAssembleType": "reply_markup_enter"
+              },
+              "module": "telegram:SendReplyMessage",
+              "version": 1,
+              "metadata": { "designer": { "x": 600, "y": 150 } },
+              "parameters": { "__IMTCONN__": 11980281 }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "designer": { "orphans": [] },
+    "scenario": {
+      "dlq": false,
+      "dataloss": false,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "roundtrips": 1,
+      "sequential": false,
+      "confidential": false,
+      "freshVariables": false,
+      "autoCommitTriggerLast": true
+    }
+  }
+}
